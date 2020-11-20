@@ -1,10 +1,7 @@
 package jdbc;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class DBTest {
@@ -12,6 +9,7 @@ public class DBTest {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		
 		ArticleDao articleDao = new ArticleDao();
+		
 		Scanner sc = new Scanner(System.in);
 		
 		while(true)
@@ -21,7 +19,17 @@ public class DBTest {
 			
 			if(cmd.equals("list"))
 			{
-				articleDao.getArticles();
+				ArrayList<Article> articles = articleDao.getArticles();
+				
+				for(int i = 0; i < articles.size(); i++)
+				{
+					System.out.println("번호 : " + articles.get(i).getId());
+					System.out.println("제목 : " + articles.get(i).getTitle());
+					System.out.println("내용 : " + articles.get(i).getBody());
+					System.out.println("날짜 : " + articles.get(i).getRegDate());
+					System.out.println("작성자 : " + articles.get(i).getNickname());
+					System.out.println("조회수 : " + articles.get(i).getHit());
+				}
 			}
 			
 			else if(cmd.equals("add"))
@@ -43,6 +51,27 @@ public class DBTest {
 				articleDao.readArticle(id);
 			}
 			
+			else if(cmd.equals("update"))
+			{
+				System.out.print("수정하고 싶은 게시물 번호를 입력해 주세요 : ");
+				int id = Integer.parseInt(sc.nextLine());
+				
+				System.out.print("제목 : ");
+				String title = sc.nextLine();
+				
+				System.out.print("내용 : ");
+				String body = sc.nextLine();
+				
+				articleDao.updateArticle(id, title, body);
+			}
+			
+			else if(cmd.equals("delete"))
+			{
+				System.out.print("지우고 싶은 게시물 번호를 입력해 주세요 :");
+				int id = Integer.parseInt(sc.nextLine());
+				
+				articleDao.deleteArticle(id);
+			}
 		}
 
 	}
