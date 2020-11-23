@@ -20,6 +20,11 @@ public class ArticleDao {
 	PreparedStatement pstmt = null;
 	ResultSet rs = null;
 	
+	public Article getRow(String sql, String[] params)
+	{
+		return (getRows(sql,params)).get(0);
+	}
+	
 	public ArrayList<Article> getRows(String sql, String[] params)
 	{
 		ArrayList<Article> articles = new ArrayList<>();
@@ -81,12 +86,28 @@ public class ArticleDao {
 		
 	}
 	
-	public void setData(String sql)
+	public void setData(String sql, String[] params)
 	{
 		try {
 			conn = getConnection();
-			
 			pstmt = conn.prepareStatement(sql);
+			
+			String[] fields = sqlCheck(sql);
+			if(fields != null)
+			{
+				for(int i = 0; i <fields.length; i++)
+				{
+					if(fields.equals("hit") || fields.equals("id"))
+					{
+						pstmt.setInt(i + 1, Integer.parseInt(params[i]));
+					}
+					else
+					{
+						pstmt.setString(i + 1, params[i]);
+					}
+				}
+			}
+			
 			pstmt.executeUpdate();
 			
 		} catch (SQLException e) {
