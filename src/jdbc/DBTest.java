@@ -55,14 +55,22 @@ public class DBTest {
 			{
 				System.out.print("수정하고 싶은 게시물 번호를 입력해 주세요 : ");
 				int id = Integer.parseInt(sc.nextLine());
+				Article article = articleDao.readArticle(id);
 				
-				System.out.print("제목 : ");
-				String title = sc.nextLine();
-				
-				System.out.print("내용 : ");
-				String body = sc.nextLine();
-				
-				articleDao.updateArticle(id, title, body);
+				if(article != null)
+				{		
+					System.out.print("제목 : ");
+					String title = sc.nextLine();
+					
+					System.out.print("내용 : ");
+					String body = sc.nextLine();
+					
+					articleDao.updateArticle(id, title, body);
+				}
+				else
+				{
+					System.out.println("해당 게시물이 존재하지 않습니다.");
+				}
 			}
 			
 			else if(cmd.equals("delete"))
@@ -70,7 +78,16 @@ public class DBTest {
 				System.out.print("지우고 싶은 게시물 번호를 입력해 주세요 :");
 				int id = Integer.parseInt(sc.nextLine());
 				
-				articleDao.deleteArticle(id);
+				Article article = articleDao.readArticle(id);
+				
+				if(article != null)
+				{
+					articleDao.deleteArticle(id);
+				}
+				else
+				{
+					System.out.println("해당 게시물이 존재하지 않습니다.");
+				}
 			}
 		}
 

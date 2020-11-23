@@ -16,22 +16,76 @@ public class ArticleDao {
 	
 	private String pass = "sbs123414";
 	
-	public ArrayList<Article> getArticles()
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	ResultSet rs = null;
+	
+	public Connection getConnection()
 	{
-		ArrayList<Article> articles = new ArrayList();
-		
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		
 		try {
 			Class.forName(driver);
-			
-			conn = DriverManager.getConnection(url,user,pass);
+			conn = DriverManager.getConnection(url, user, pass);			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-			String listSQL = "SELECT * FROM article";
-			pstmt = conn.prepareStatement(listSQL);
+		return conn;
+	}
+	
+	public void close()
+	{
+		try {
+			if(rs != null)
+			{
+				rs.close();
+			}
+			if(pstmt != null)
+			{
+				pstmt.close();
+			}
+			if(conn != null)
+			{
+				conn.close();
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public ArrayList<Article> getRows(String sql, String[] params)
+	{
+		ArrayList<Article> articles = new ArrayList<>();
+		
+		try {
+			conn = getConnection();
 			
+			pstmt = conn.prepareStatement(sql);
+			
+			String[] fields = sqlCheck(sql);
+			
+			if(fields != null)
+			{
+				for(int i = 0; i < fields.length; i++)
+				{
+					if(fields.equals("hit") || fields.equals("id"))
+					{
+						pstmt.setInt(i + 1,  Integer.parseInt(params[i]));
+					}
+					else
+					{
+						pstmt.setString(i + 1,  params[i]);
+					}
+				}
+				
+			}
+	
 			rs = pstmt.executeQuery();
 			
 			while(rs.next())
@@ -42,39 +96,90 @@ public class ArticleDao {
 				String nickname = rs.getString("nickname");
 				int hit = rs.getInt("hit");
 				System.out.println(id + " " + title + " " + body + " " + nickname + " " + hit);
+				
+				Article article = new Article();
+				article.setTitle(title);
+				article.setBody(body);
+				article.setNickname(nickname);
+				article.setId(id);
+				article.setHit(hit);
+				
+				articles.add(article);
+				
 			}
 			
-		}
-		catch(SQLException e)
-		{
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		catch(ClassNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try {
-				if(rs != null)
-				{
-					rs.close();
-				}
-				if(pstmt != null)
-				{
-					pstmt.close();
-				}
-				if(conn != null)
-				{
-					conn.close();
-				}
+		} finally {
+			close();
 			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-			}
-		}
+			
 		return articles;
+		
+	}
+	
+	public void setData(String sql)
+	{
+		try {
+			conn = getConnection();
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+		
+	}
+	
+	public String[] sqlCheck(String sql)
+	{
+		String[] stringBits = null;
+		
+		if(sql.startsWith("select") || sql.startsWith("update"))
+		{
+			int index = sql.indexOf(" where ");
+			
+			if(index != -1)
+			{
+				sql = sql.substring(index + 7);
+				
+				stringBits = sql.split("and");
+				
+				for(int i = 0; i < stringBits.length; i++)
+				{
+					stringBits[i]  = stringBits[i].replace(" ", "");
+				}
+				
+				for(int i = 0; i < stringBits.length; i++)
+				{
+					String[] tmp = stringBits[i].split("=");
+					stringBits[i] = tmp[0].replace(" ", "");
+				}	
+			}
+		}
+		return stringBits;
+	}
+	
+	
+	
+	
+	public ArrayList<Article> getArticles()
+	{
+		return getRows("select * from article", null);
+	}
+	
+	public ArrayList<Article> getArticlesByTitle(String title)
+	{
+		String[] params = new String[1];
+		params[0] = title;
+		
+		return getRows("select * from article where title = ?", params);
 	}
 	
 	public void addArticle(String title, String body)
@@ -128,8 +233,10 @@ public class ArticleDao {
 		}
 	}
 	
-	public void readArticle(int id)
+	public Article readArticle(int id)
 	{
+		Article article = new Article();
+		
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -154,6 +261,12 @@ public class ArticleDao {
 				String nickname = rs.getString("nickname");
 				int hit = rs.getInt("hit");
 				System.out.println(id2 + " " + title + " " + body + " " + nickname + " " + hit);
+				
+				article.setTitle(title);
+				article.setId(id2);
+				article.setBody(body);
+				article.setNickname(nickname);
+				article.setHit(hit);
 			}
 			
 			else 
@@ -190,7 +303,7 @@ public class ArticleDao {
 				e.printStackTrace();
 			}
 		}
-		
+		return article;
 	}
 	
 	public void updateArticle(int id, String title, String body)
