@@ -20,45 +20,6 @@ public class ArticleDao {
 	PreparedStatement pstmt = null;
 	ResultSet rs = null;
 	
-	public Connection getConnection()
-	{
-		try {
-			Class.forName(driver);
-			conn = DriverManager.getConnection(url, user, pass);			
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return conn;
-	}
-	
-	public void close()
-	{
-		try {
-			if(rs != null)
-			{
-				rs.close();
-			}
-			if(pstmt != null)
-			{
-				pstmt.close();
-			}
-			if(conn != null)
-			{
-				conn.close();
-			}
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-		}
-		
-	}
-	
 	public ArrayList<Article> getRows(String sql, String[] params)
 	{
 		ArrayList<Article> articles = new ArrayList<>();
@@ -398,6 +359,45 @@ public class ArticleDao {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public Connection getConnection()
+	{
+		try {
+			Class.forName(driver);
+			conn = DriverManager.getConnection(url, user, pass);			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return conn;
+	}
+	
+	public void close()
+	{
+		try {
+			if(rs != null)
+			{
+				rs.close();
+			}
+			if(pstmt != null)
+			{
+				pstmt.close();
+			}
+			if(conn != null)
+			{
+				conn.close();
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		
 	}
 	
 }
